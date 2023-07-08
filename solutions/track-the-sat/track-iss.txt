@@ -11,5 +11,4 @@ ISS (ZARYA)
 python3 trackasat.py
 
 6. Paste in TLE lines
-7. Go to GPS Site
-8. Go to Space Orbit Site
+7. Go to https://orbitalmechanics.info/ and plug in orbital elements

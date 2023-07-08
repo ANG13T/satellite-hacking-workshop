@@ -1,0 +1,2 @@
+INSTALLATION
+pip3 install pyephem

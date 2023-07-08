@@ -13,16 +13,10 @@
 #     def parseTLE():
 #         pass    
 
-# name = input("Enter satellite name: ")
-# lineOne = input("Enter first line of TLE: ")
-# lineTwo = input("Enter second line of TLE: ")
-
-# -*- coding: utf-8 -*-
 import numpy as np
 from datetime import datetime, timedelta
 import pytz
-import graphics
-import urllib
+import ephem
 
 pdt = pytz.timezone('US/Pacific')
 
@@ -56,7 +50,7 @@ def eccentricAnomalyFromMean(mean_anomaly, eccentricity, initValue,
        All input and outputs are in radians"""
     mean_anomaly = mean_anomaly
     e0 = initValue
-    for x in xrange(maxIter):
+    for x in range(maxIter):
         e1 = e0 - (e0 - eccentricity * sin(e0) - mean_anomaly) / (1.0 - eccentricity * cos(e0))
         if (abs(e1-e0) < maxAccuracy):
             break
@@ -121,10 +115,11 @@ def pretty_print(tle, printInfo = True, labels = True):
     eccentric_anomaly *= 180/pi
     true_anomaly *= 180/pi
 
+    tle_rec = ephem.readtle(title, line1, line2)
+    tle_rec.compute()
+
     if (printInfo):
         print ("----------------------------------------------------------------------------------------")
-        print (tle)
-        print ("---")
         print ("Satellite Name                                            = %s" % title)
         print ("Satellite number                                          = %g (%s)" % (satellite_number, "Unclassified" if classification == 'U' else "Classified"))
         print ("International Designator                                  = YR: %02d, LAUNCH #%d, PIECE: %s" % (international_designator_year, international_designator_launch_number, international_designator_piece_of_launch))
@@ -135,32 +130,29 @@ def pretty_print(tle, printInfo = True, labels = True):
         print ("The number 0                                              = %g" % the_number_0)
         print ("Element number                                            = %g" % element_number)
         print
-        print ("Inclination [Degrees]                                     = %g°" % inclination)
-        print ("Right Ascension of the Ascending Node [Degrees]           = %g°" % right_ascension)
+        print ("Inclination [Degrees]                                     = %g" % inclination)
+        print ("Right Ascension of the Ascending Node [Degrees]           = %g" % right_ascension)
         print ("Eccentricity                                              = %g" % eccentricity)
-        print ("Argument of Perigee [Degrees]                             = %g°" % argument_perigee)
-        print ("Mean Anomaly [Degrees] Anomaly                            = %g°" % mean_anomaly)
-        print ("Eccentric Anomaly                                         = %g°" % eccentric_anomaly)
-        print ("True Anomaly                                              = %g°" % true_anomaly)
+        print ("Argument of Perigee [Degrees]                             = %g" % argument_perigee)
+        print ("Mean Anomaly [Degrees] Anomaly                            = %g" % mean_anomaly)
+        print ("Eccentric Anomaly                                         = %g" % eccentric_anomaly)
+        print ("True Anomaly                                              = %g" % true_anomaly)
         print ("Mean Motion [Revs per day] Motion                         = %g" % mean_motion)
         print ("Period                                                    = %s" % timedelta(seconds=period))
         print ("Revolution number at epoch [Revs]                         = %g" % revolution)
 
-        print
-        print ("semi_major_axis = %gkm" % semi_major_axis)
-        print ("eccentricity    = %g" % eccentricity)
-        print ("inclination     = %g°" % inclination)
-        print ("arg_perigee     = %g°" % argument_perigee)
-        print ("right_ascension = %g°" % right_ascension)
-        print ("true_anomaly    = %g°" % true_anomaly)
+        print("----------------------------------------------------------------------------------------")
+        print ("Semi-Major Axis (a)                                       = %gkm" % semi_major_axis)
+        print ("Eccentricity    (e)                                       = %g" % eccentricity)
+        print ("Inclination     (i)                                       = %g" % inclination)
+        print ("Argument of Periapsis (w)                                 = %g" % argument_perigee)
+        print ("Right Ascension of the Ascending Node (Ω)                 = %g" % right_ascension)
+        print ("True Anomaly (v)                                          = %g" % true_anomaly)
         print ("----------------------------------------------------------------------------------------")
+        print ("Longitude                                                 = %s" % tle_rec.sublong)
+        print ("Latitude                                                  = %s" % tle_rec.sublat)
+        print("----------------------------------------------------------------------------------------")
 
-    if labels:
-        graphics.plotOrbit(semi_major_axis, eccentricity, inclination,
-                           right_ascension, argument_perigee, true_anomaly, title)
-    else:
-        graphics.plotOrbit(semi_major_axis, eccentricity, inclination,
-                           right_ascension, argument_perigee, true_anomaly)
 
 def doChecksum(line):
     """The checksums for each line are calculated by adding the all numerical digits on that line, including the 
@@ -169,43 +161,18 @@ def doChecksum(line):
        @note this excludes last char for the checksum thats already there."""
     return sum(map(int, filter(lambda c: c >= '0' and c <= '9', line[:-1].replace('-','1')))) % 10
 
-# elem1 = """ISS (ZARYA)
-# 1 25544U 98067A   08264.51782528 -.00002182  00000-0 -11606-4 0  2927
-# 2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.72125391563537"""
+elem1 = """ISS (ZARYA)
+1 25544U 98067A   08264.51782528 -.00002182  00000-0 -11606-4 0  2927
+2 25544  51.6416 247.4627 0006703 130.5360 325.0288 15.72125391563537"""
+
+name = input("Paste in Name of Satellite: ")
+lineOne = input("Paste in TLE Line One: ")
+lineTwo = input("Paste in TLE Line Two: ")
+
+constructedTLE = name + "\n" + lineOne + "\n" + lineTwo
 
 # dragon = """DRAGON CRS-2            
 # 1 39115U 13010A   13062.62492353  .00008823  00000-0  14845-3 0   188
 # 2 39115  51.6441 272.5899 0012056 334.2535  68.5574 15.52501943   306"""
 
-graphics.plotEarth()
-
-# Data from NORAD http://www.celestrak.com/NORAD/elements/
-# filename = "noaa.txt" # NOAA satellites
-# filename = "geo.txt" # Geostationary satellites
-# filename = "gps-ops.txt" # GPS sats
-# filename = "military.txt" # Some military satellites
-# filename = "stations.txt" # Space stations
-# filename = "visual.txt" # 100 brightest or so objects
-
-# files = ["noaa.txt", "stations.txt", "military.txt", "gps-ops.txt"]
-# files = ["stations.txt"]
-
-names = ["stations"]
-
-for urlname in names:
-    f = urllib.urlopen("http://www.celestrak.com/NORAD/elements/%s.txt" % urlname)
-    elem = ""
-    for line in f:
-        elem += line
-        if (line[0] == '2'):
-            elem = elem.strip()
-            if elem.startswith("ISS"):
-                pretty_print(elem, printInfo=True, labels=True)
-            elem = ""
-
-# pretty_print(elem1)
-# pretty_print(dragon)
-
-graphics.doDraw()
-
-# EOF
+pretty_print(constructedTLE)
