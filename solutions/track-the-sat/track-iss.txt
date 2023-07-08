@@ -1,0 +1,15 @@
+1. GO to https://celestrak.org/NORAD/elements/
+2. Select "Space Stations"
+3. Copy the TLE for "ISS (ZARYA)"
+Looks like the following:
+ISS (ZARYA)             
+1 25544U 98067A   23187.87366696  .00010559  00000+0  19559-3 0  9993
+2 25544  51.6404 230.9467 0000418  28.8951 142.9372 15.49576658404843
+
+4. Go under the scripts/ folder
+5. Execute the trackasat.py script using the command:
+python3 trackasat.py
+
+6. Paste in TLE lines
+7. Go to GPS Site
+8. Go to Space Orbit Site
