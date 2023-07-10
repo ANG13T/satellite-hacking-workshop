@@ -1,2 +1,4 @@
-INSTALLATION
-pip3 install pyephem
+# INSTALLATION
+`pip3 install pyephem`
+
+`pip3 install numpy`
